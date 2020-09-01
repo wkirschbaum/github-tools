@@ -5,6 +5,10 @@ class Github
     Octokit::Client.new(access_token: ENV['GITHUB_ACCESS_TOKEN'])
   end
 
+  def self.rate_limit(client)
+    client.rate_limit.remaining
+  end
+
   def self.each_repo(client, org)
     client.auto_paginate = true
 

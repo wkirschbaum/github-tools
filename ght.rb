@@ -8,7 +8,8 @@ Options = Struct.new(
   :org,
   :scan,
   :list,
-  :lang
+  :lang,
+  :rate
 )
 args = Options.new
 
@@ -39,19 +40,29 @@ OptionParser.new do |opts|
     args.lang = true
   end
 
+  opts.on("-R", "Show rate limit") do
+    args.rate = true
+  end
+
+
   opts.on("-s", "Show vulnerability scan") do
     args.scan = true
   end
 end.parse!
+
+client = Github.client
+if args.rate
+  puts "Limit remaining #{client.rate_limit.remaining}"
+  exit
+end
 
 unless args.org
   puts "You have to specify an organization for this action"
   exit
 end
 
-client = Github.client
-
 if args.list
+
   if args.scan
     gem_audit = GemAudit.new
   end
@@ -68,14 +79,15 @@ if args.list
       if repo.language == "Ruby"
         begin
           file = Base64.decode64(Github.content(client, repo, "Gemfile.lock").content)
-          out += gem_audit.scan(file).map do |result|
+          results =  gem_audit.scan(file).map do |result|
             result[:name]
-          end.join(',')
+          end
+          out += "#{results.count}\t#{results.join(',')}"
         rescue => e
-          out += "?"
+          out += "?\t?"
         end
       else
-        out += "?"
+        out += "?\t?"
       end
     end
     puts out
