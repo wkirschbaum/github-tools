@@ -1,5 +1,7 @@
 # Usage
 
+Ensure `GITHUB_ACCESS_TOKEN` is set in your environment
+
 To get all repositories for an organization
 ```bash
 ruby ght.rb -L -o sampleorg
